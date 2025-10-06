@@ -24,6 +24,14 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'Testimony App Backend is running',
+    version: '1.1.0',
+    features: [
+      'Firebase Authentication Support',
+      'Cloud Sync API Ready',
+      'Episode Filtering Enhanced',
+      'Professional UI Updates'
+    ],
+    lastUpdated: '2025-10-06',
     timestamp: new Date().toISOString()
   });
 });
