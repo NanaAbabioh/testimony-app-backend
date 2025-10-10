@@ -1,5 +1,41 @@
-// Simple admin authentication for Railway backend
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'dev-admin-token-change-in-production';
+// Admin authentication for Railway backend
+const crypto = require('crypto');
+
+const TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || 'ah-admin-secret-2025';
+
+/**
+ * Verify signed admin token
+ * @param {string} token - Token to verify
+ * @returns {boolean} True if valid
+ */
+function verifyToken(token) {
+  if (!token) return false;
+
+  try {
+    const parts = token.split('.');
+
+    if (parts.length !== 3) return false;
+
+    const [tokenPart, timestamp, signature] = parts;
+
+    if (!tokenPart || !timestamp || !signature) return false;
+
+    // Check if token is expired (24 hours)
+    const tokenAge = Date.now() - parseInt(timestamp);
+    if (tokenAge > 24 * 60 * 60 * 1000) return false;
+
+    // Verify signature
+    const payload = `${tokenPart}.${timestamp}`;
+    const expectedSignature = crypto
+      .createHmac('sha256', TOKEN_SECRET)
+      .update(payload)
+      .digest('hex');
+
+    return signature === expectedSignature;
+  } catch (error) {
+    return false;
+  }
+}
 
 /**
  * Verify admin authentication token
@@ -14,11 +50,11 @@ async function requireAdmin(authHeader) {
 
   const token = authHeader.slice('Bearer '.length);
 
-  if (token !== ADMIN_TOKEN) {
-    throw new Error('Unauthorized: Invalid token');
+  if (!verifyToken(token)) {
+    throw new Error('Unauthorized: Invalid or expired token');
   }
 
   return { uid: 'admin', email: 'admin@alphahour.com' };
 }
 
-module.exports = { requireAdmin };
+module.exports = { requireAdmin, verifyToken };
