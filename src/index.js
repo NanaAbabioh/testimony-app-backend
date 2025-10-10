@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 3002;
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'http://localhost:3001',
+    'https://alphahourtestimonylibrary.org',
+    'https://www.alphahourtestimonylibrary.org',
     'https://ah-testimony-library-g4nq4gleq-ababiohnana17-6948s-projects.vercel.app',
     /https:\/\/.*\.vercel\.app$/,
     /https:\/\/.*\.railway\.app$/
