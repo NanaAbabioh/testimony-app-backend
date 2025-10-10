@@ -43,6 +43,7 @@ app.get('/health', (req, res) => {
 const categoriesRoutes = require('./routes/categories');
 const clipsRoutes = require('./routes/clips');
 const adminRoutes = require('./routes/admin');
+const adminClipsRoutes = require('./routes/admin-clips');
 const processVideoRoutes = require('./routes/process-video');
 const testimoniesRoutes = require('./routes/testimonies');
 const userRoutes = require('./routes/user');
@@ -52,6 +53,7 @@ const searchRoutes = require('./routes/search');
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/clips', clipsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/clips', adminClipsRoutes);
 app.use('/api/process-video', processVideoRoutes);
 app.use('/api/testimonies', testimoniesRoutes);
 app.use('/api/user', userRoutes);
