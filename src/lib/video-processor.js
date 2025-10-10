@@ -197,20 +197,39 @@ async function downloadWithYtDlpCookies(youtubeUrl, outputPath) {
       console.log('🗑️ Removed empty file from failed ytdl-core attempt');
     }
 
-    const ytDlp = spawn('python3', [
-      '-m', 'yt_dlp',
-      youtubeUrl,
-      '--format', 'worst[height>=360]/worst',
-      '--output', outputPath,
-      '--extractor-args', 'youtube:player_client=android',
-      '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
-      '--add-header', 'X-YouTube-Client-Name:3',
-      '--add-header', 'X-YouTube-Client-Version:19.09.37',
-      '--no-check-certificate',
-      '--geo-bypass',
-      '--cookies-from-browser', 'chrome',  // Extract cookies from Chrome for age-restricted videos
-      '--age-limit', '0'  // Bypass age restrictions
-    ]);
+    // Try to find yt-dlp command - try direct command first, then python3 -m yt_dlp
+    const ytDlpCommands = [
+      { cmd: 'yt-dlp', args: [] },
+      { cmd: 'python3', args: ['-m', 'yt_dlp'] },
+      { cmd: '/usr/bin/python3', args: ['-m', 'yt_dlp'] }
+    ];
+
+    let currentCommandIndex = 0;
+
+    const tryNextCommand = () => {
+      if (currentCommandIndex >= ytDlpCommands.length) {
+        reject(new Error('Could not find yt-dlp command'));
+        return;
+      }
+
+      const { cmd, args } = ytDlpCommands[currentCommandIndex];
+      const fullArgs = [
+        ...args,
+        youtubeUrl,
+        '--format', 'worst[height>=360]/worst',
+        '--output', outputPath,
+        '--extractor-args', 'youtube:player_client=android',
+        '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
+        '--add-header', 'X-YouTube-Client-Name:3',
+        '--add-header', 'X-YouTube-Client-Version:19.09.37',
+        '--no-check-certificate',
+        '--geo-bypass',
+        '--cookies-from-browser', 'chrome',  // Extract cookies from Chrome for age-restricted videos
+        '--age-limit', '0'  // Bypass age restrictions
+      ];
+
+      console.log(`Trying command: ${cmd} ${fullArgs.join(' ')}`);
+      const ytDlp = spawn(cmd, fullArgs);
 
     let stderr = '';
 
@@ -241,9 +260,14 @@ async function downloadWithYtDlpCookies(youtubeUrl, outputPath) {
       }
     });
 
-    ytDlp.on('error', (error) => {
-      reject(new Error(`yt-dlp with cookies process failed: ${error.message}`));
-    });
+      ytDlp.on('error', (error) => {
+        console.log(`Command failed: ${cmd}, trying next... Error: ${error.message}`);
+        currentCommandIndex++;
+        tryNextCommand();
+      });
+    };
+
+    tryNextCommand();
   });
 }
 
@@ -262,18 +286,37 @@ async function downloadWithYtDlpNoCookies(youtubeUrl, outputPath) {
       console.log('🗑️ Removed existing file from failed attempt');
     }
 
-    const ytDlp = spawn('python3', [
-      '-m', 'yt_dlp',
-      youtubeUrl,
-      '--format', 'worst[height>=360]/worst',
-      '--output', outputPath,
-      '--extractor-args', 'youtube:player_client=android',
-      '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
-      '--add-header', 'X-YouTube-Client-Name:3',
-      '--add-header', 'X-YouTube-Client-Version:19.09.37',
-      '--no-check-certificate',
-      '--geo-bypass'
-    ]);
+    // Try to find yt-dlp command - try direct command first, then python3 -m yt_dlp
+    const ytDlpCommands = [
+      { cmd: 'yt-dlp', args: [] },
+      { cmd: 'python3', args: ['-m', 'yt_dlp'] },
+      { cmd: '/usr/bin/python3', args: ['-m', 'yt_dlp'] }
+    ];
+
+    let currentCommandIndex = 0;
+
+    const tryNextCommand = () => {
+      if (currentCommandIndex >= ytDlpCommands.length) {
+        reject(new Error('Could not find yt-dlp command'));
+        return;
+      }
+
+      const { cmd, args } = ytDlpCommands[currentCommandIndex];
+      const fullArgs = [
+        ...args,
+        youtubeUrl,
+        '--format', 'worst[height>=360]/worst',
+        '--output', outputPath,
+        '--extractor-args', 'youtube:player_client=android',
+        '--user-agent', 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
+        '--add-header', 'X-YouTube-Client-Name:3',
+        '--add-header', 'X-YouTube-Client-Version:19.09.37',
+        '--no-check-certificate',
+        '--geo-bypass'
+      ];
+
+      console.log(`Trying command (no cookies): ${cmd} ${fullArgs.join(' ')}`);
+      const ytDlp = spawn(cmd, fullArgs);
 
     let stderr = '';
 
@@ -304,9 +347,14 @@ async function downloadWithYtDlpNoCookies(youtubeUrl, outputPath) {
       }
     });
 
-    ytDlp.on('error', (error) => {
-      reject(new Error(`yt-dlp without cookies process failed: ${error.message}`));
-    });
+      ytDlp.on('error', (error) => {
+        console.log(`Command failed (no cookies): ${cmd}, trying next... Error: ${error.message}`);
+        currentCommandIndex++;
+        tryNextCommand();
+      });
+    };
+
+    tryNextCommand();
   });
 }
 

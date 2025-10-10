@@ -3,7 +3,9 @@ aptPkgs = ["python3", "python3-pip", "ffmpeg"]
 
 [phases.install]
 cmds = [
-  "pip3 install --upgrade yt-dlp"
+  "pip3 install --user --upgrade yt-dlp",
+  "ln -sf ~/.local/bin/yt-dlp /usr/local/bin/yt-dlp || true",
+  "ln -sf /usr/bin/python3 /usr/local/bin/python3 || true"
 ]
 
 [start]
