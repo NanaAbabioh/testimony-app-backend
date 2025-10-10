@@ -231,34 +231,34 @@ async function downloadWithYtDlpCookies(youtubeUrl, outputPath) {
       console.log(`Trying command: ${cmd} ${fullArgs.join(' ')}`);
       const ytDlp = spawn(cmd, fullArgs);
 
-    let stderr = '';
+      let stderr = '';
 
-    ytDlp.stdout.on('data', (data) => {
-      console.log(`yt-dlp: ${data.toString().trim()}`);
-    });
+      ytDlp.stdout.on('data', (data) => {
+        console.log(`yt-dlp: ${data.toString().trim()}`);
+      });
 
-    ytDlp.stderr.on('data', (data) => {
-      const output = data.toString().trim();
-      stderr += output;
-      console.log(`yt-dlp stderr: ${output}`);
-    });
+      ytDlp.stderr.on('data', (data) => {
+        const output = data.toString().trim();
+        stderr += output;
+        console.log(`yt-dlp stderr: ${output}`);
+      });
 
-    ytDlp.on('close', (code) => {
-      console.log(`yt-dlp (with cookies) exited with code: ${code}`);
-      if (code === 0) {
-        // Check if file was created
-        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
-          const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
-          console.log(`✅ yt-dlp cookie download completed: ${fileSizeMB} MB`);
-          resolve();
+      ytDlp.on('close', (code) => {
+        console.log(`yt-dlp (with cookies) exited with code: ${code}`);
+        if (code === 0) {
+          // Check if file was created
+          if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
+            const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
+            console.log(`✅ yt-dlp cookie download completed: ${fileSizeMB} MB`);
+            resolve();
+          } else {
+            console.log(`❌ yt-dlp (cookies) created empty or missing file. Path: ${outputPath}, Exists: ${fs.existsSync(outputPath)}`);
+            reject(new Error(`yt-dlp with cookies created empty file. stderr: ${stderr}`));
+          }
         } else {
-          console.log(`❌ yt-dlp (cookies) created empty or missing file. Path: ${outputPath}, Exists: ${fs.existsSync(outputPath)}`);
-          reject(new Error(`yt-dlp with cookies created empty file. stderr: ${stderr}`));
+          reject(new Error(`yt-dlp with cookies failed with code ${code}: ${stderr}`));
         }
-      } else {
-        reject(new Error(`yt-dlp with cookies failed with code ${code}: ${stderr}`));
-      }
-    });
+      });
 
       ytDlp.on('error', (error) => {
         console.log(`Command failed: ${cmd}, trying next... Error: ${error.message}`);
@@ -318,34 +318,34 @@ async function downloadWithYtDlpNoCookies(youtubeUrl, outputPath) {
       console.log(`Trying command (no cookies): ${cmd} ${fullArgs.join(' ')}`);
       const ytDlp = spawn(cmd, fullArgs);
 
-    let stderr = '';
+      let stderr = '';
 
-    ytDlp.stdout.on('data', (data) => {
-      console.log(`yt-dlp: ${data.toString().trim()}`);
-    });
+      ytDlp.stdout.on('data', (data) => {
+        console.log(`yt-dlp: ${data.toString().trim()}`);
+      });
 
-    ytDlp.stderr.on('data', (data) => {
-      const output = data.toString().trim();
-      stderr += output;
-      console.log(`yt-dlp stderr: ${output}`);
-    });
+      ytDlp.stderr.on('data', (data) => {
+        const output = data.toString().trim();
+        stderr += output;
+        console.log(`yt-dlp stderr: ${output}`);
+      });
 
-    ytDlp.on('close', (code) => {
-      console.log(`yt-dlp (no cookies) exited with code: ${code}`);
-      if (code === 0) {
-        // Check if file was created
-        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
-          const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
-          console.log(`✅ yt-dlp fallback download completed: ${fileSizeMB} MB`);
-          resolve();
+      ytDlp.on('close', (code) => {
+        console.log(`yt-dlp (no cookies) exited with code: ${code}`);
+        if (code === 0) {
+          // Check if file was created
+          if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
+            const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
+            console.log(`✅ yt-dlp fallback download completed: ${fileSizeMB} MB`);
+            resolve();
+          } else {
+            console.log(`❌ yt-dlp (no cookies) created empty or missing file. Path: ${outputPath}, Exists: ${fs.existsSync(outputPath)}`);
+            reject(new Error(`yt-dlp without cookies created empty file. stderr: ${stderr}`));
+          }
         } else {
-          console.log(`❌ yt-dlp (no cookies) created empty or missing file. Path: ${outputPath}, Exists: ${fs.existsSync(outputPath)}`);
-          reject(new Error(`yt-dlp without cookies created empty file. stderr: ${stderr}`));
+          reject(new Error(`yt-dlp without cookies failed with code ${code}: ${stderr}`));
         }
-      } else {
-        reject(new Error(`yt-dlp without cookies failed with code ${code}: ${stderr}`));
-      }
-    });
+      });
 
       ytDlp.on('error', (error) => {
         console.log(`Command failed (no cookies): ${cmd}, trying next... Error: ${error.message}`);
